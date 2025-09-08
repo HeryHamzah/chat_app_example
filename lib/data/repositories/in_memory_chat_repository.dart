@@ -135,33 +135,7 @@ class InMemoryChatRepository implements ChatRepository {
     return 'Assistant reply to $parentId #$variant$regenTag';
   }
 
-  @override
-  Future<ChatTree> regenerateAssistantReply() async {
-    final ChatTree tree = await getCurrentTree();
-    // Cari user node terakhir pada path (lewati node assistant di ujung).
-    int idx = tree.branchPathIds.length - 1;
-    while (idx >= 0 &&
-        tree.nodes[tree.branchPathIds[idx]]!.message.role == 'assistant') {
-      idx--;
-    }
-    if (idx < 0) return tree;
-    final String lastUserId = tree.branchPathIds[idx];
-
-    // Jika saat ini yang terpilih adalah anak assistant, simpan tail-nya dulu.
-    if (idx + 1 < tree.branchPathIds.length) {
-      final String currentAssistantId = tree.branchPathIds[idx + 1];
-      final List<String> currentTail = List<String>.from(
-        tree.branchPathIds.sublist(idx + 1),
-      );
-      _savedTailsByAssistantId[currentAssistantId] = currentTail;
-    }
-
-    // Mundur ke user node dulu agar regenerate memilih balasan baru sebagai leaf
-    tree.branchPathIds.removeRange(idx + 1, tree.branchPathIds.length);
-    // Tambahkan alternatif jawaban assistant baru di bawah user node tersebut.
-    await _createAssistantReply(tree, lastUserId, regenerate: true);
-    return tree;
-  }
+  // Catatan: regenerateAssistantReply() dihapus karena kini regenerate dilakukan per-bubble.
 
   @override
   Future<ChatTree> regenerateAssistantAt(String assistantNodeId) async {

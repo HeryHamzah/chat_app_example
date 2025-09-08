@@ -27,17 +27,7 @@ class ChatPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Branching Chat'),
-        actions: [
-          // Tombol untuk regenerate jawaban assistant terakhir
-          IconButton(
-            onPressed: state.isLoading ? null : controller.regenerate,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Regenerate assistant reply',
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Branching Chat')),
       body: Column(
         children: [
           if (state.isLoading) const LinearProgressIndicator(minHeight: 2),

@@ -48,13 +48,6 @@ class ChatController extends StateNotifier<ChatState> {
     state = state.copyWith(tree: tree, isLoading: false, input: '');
   }
 
-  // Regenerasi balasan assistant (membuat saudara baru pada node user terakhir).
-  Future<void> regenerate() async {
-    state = state.copyWith(isLoading: true);
-    final ChatTree tree = await _repo.regenerateAssistantReply();
-    state = state.copyWith(tree: tree, isLoading: false);
-  }
-
   // Regenerasi di node assistant tertentu
   Future<void> regenerateAt(String assistantNodeId) async {
     state = state.copyWith(isLoading: true);

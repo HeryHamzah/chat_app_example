@@ -11,10 +11,6 @@ abstract class ChatRepository {
   /// Menambahkan pesan user ke branch aktif dan membuat balasan assistant otomatis.
   Future<ChatTree> sendUserMessage(String content);
 
-  /// Membuat balasan assistant baru sebagai alternatif (saudara) di bawah
-  /// user terakhir, lalu memilih balasan baru tersebut sebagai path aktif.
-  Future<ChatTree> regenerateAssistantReply();
-
   /// Regenerasi balasan untuk node assistant tertentu (membuat sibling baru
   /// untuk parent user yang sama), lalu memilih balasan baru tersebut.
   Future<ChatTree> regenerateAssistantAt(String assistantNodeId);
