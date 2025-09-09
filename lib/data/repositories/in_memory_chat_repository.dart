@@ -226,4 +226,11 @@ class InMemoryChatRepository implements ChatRepository {
     }
     return tree;
   }
+
+  @override
+  Future<void> clearStorage() async {
+    // Reset tree ke null agar conversation baru dibuat saat getCurrentTree() dipanggil
+    _tree = null;
+    _savedTailsByAssistantId.clear();
+  }
 }

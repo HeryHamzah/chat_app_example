@@ -1,6 +1,7 @@
 import 'package:chat_app_example/domain/entities/chat_models.dart';
 import 'package:chat_app_example/domain/repositories/chat_repository.dart';
-import 'package:chat_app_example/data/repositories/in_memory_chat_repository.dart';
+import 'package:chat_app_example/data/local/drift/database.dart';
+import 'package:chat_app_example/data/repositories/local_drift_chat_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // State ringan untuk menyimpan tree, status loading, dan input teks saat ini.
@@ -61,11 +62,23 @@ class ChatController extends StateNotifier<ChatState> {
     final ChatTree tree = await _repo.selectSiblingBranch(nodeId);
     state = state.copyWith(tree: tree, isLoading: false);
   }
+
+  // Hapus penyimpanan lokal (untuk debugging/reset)
+  Future<void> clearStorage() async {
+    state = state.copyWith(isLoading: true);
+    await _repo.clearStorage();
+    // Setelah clear, mulai ulang percakapan default
+    final ChatTree tree = await _repo.newConversation(
+      'You are a helpful assistant.',
+    );
+    state = state.copyWith(tree: tree, isLoading: false, input: '');
+  }
 }
 
 // Provider untuk repository agar mudah ditukar (in-memory vs remote)
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
-  return InMemoryChatRepository();
+  final db = AppDatabase();
+  return LocalDriftChatRepository(db);
 });
 
 // Provider untuk controller agar UI dapat meng-observe state ChatState

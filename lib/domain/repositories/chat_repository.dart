@@ -18,4 +18,7 @@ abstract class ChatRepository {
   /// Berpindah ke saudara (sibling) assistant berikutnya untuk node assistant
   /// yang diberikan, dan memperbarui path branch yang terpilih.
   Future<ChatTree> selectSiblingBranch(String nodeId);
+
+  /// Hapus seluruh penyimpanan lokal yang berkaitan (untuk debugging/Reset).
+  Future<void> clearStorage();
 }

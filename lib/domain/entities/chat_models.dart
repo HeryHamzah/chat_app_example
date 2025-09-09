@@ -23,6 +23,25 @@ class ChatMessage {
 
   /// Waktu pembuatan pesan.
   final DateTime createdAt;
+
+  // --- Serialization helpers ---
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'parentId': parentId,
+    'role': role,
+    'content': content,
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  static ChatMessage fromJson(Map<String, dynamic> json) {
+    return ChatMessage(
+      id: json['id'] as String,
+      parentId: json['parentId'] as String,
+      role: json['role'] as String,
+      content: json['content'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
 }
 
 /// Node dalam tree percakapan yang membungkus [ChatMessage]
@@ -47,6 +66,23 @@ class ChatNode {
   /// Daftar berurutan id node anak (masing-masing adalah alternatif kelanjutan),
   /// membentuk sibling branches.
   final List<String> childIds;
+
+  // --- Serialization helpers ---
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'parentId': parentId,
+    'message': message.toJson(),
+    'childIds': childIds,
+  };
+
+  static ChatNode fromJson(Map<String, dynamic> json) {
+    return ChatNode(
+      id: json['id'] as String,
+      parentId: json['parentId'] as String,
+      message: ChatMessage.fromJson(json['message'] as Map<String, dynamic>),
+      childIds: (json['childIds'] as List<dynamic>).cast<String>(),
+    );
+  }
 }
 
 /// Seluruh percakapan yang disimpan sebagai struktur tree dengan path terpilih.
@@ -68,4 +104,26 @@ class ChatTree {
   /// Daftar ini menyimpan urutan id untuk memudahkan rekonstruksi UI
   /// dan perpindahan antar sibling tanpa kehilangan branch lain.
   final List<String> branchPathIds;
+
+  // --- Serialization helpers ---
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'rootId': rootId,
+    'nodes': nodes.map(
+      (String key, ChatNode value) => MapEntry(key, value.toJson()),
+    ),
+    'branchPathIds': branchPathIds,
+  };
+
+  static ChatTree fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic> rawNodes = json['nodes'] as Map<String, dynamic>;
+    final Map<String, ChatNode> parsedNodes = <String, ChatNode>{
+      for (final MapEntry<String, dynamic> e in rawNodes.entries)
+        e.key: ChatNode.fromJson(e.value as Map<String, dynamic>),
+    };
+    return ChatTree(
+      rootId: json['rootId'] as String,
+      nodes: parsedNodes,
+      branchPathIds: (json['branchPathIds'] as List<dynamic>).cast<String>(),
+    );
+  }
 }

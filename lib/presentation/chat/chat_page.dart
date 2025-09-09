@@ -30,6 +30,32 @@ class ChatPage extends ConsumerWidget {
       appBar: AppBar(title: const Text('Branching Chat')),
       body: Column(
         children: [
+          // Tombol reset DB untuk debugging penyimpanan
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final controller = ref.read(chatControllerProvider.notifier);
+                  return TextButton.icon(
+                    onPressed: state.isLoading
+                        ? null
+                        : () async {
+                            await controller.clearStorage();
+                            // Opsional: buat percakapan baru setelah clear
+                            // ignore: use_build_context_synchronously
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Database cleared')),
+                            );
+                          },
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Hapus Database'),
+                  );
+                },
+              ),
+            ),
+          ),
           if (state.isLoading) const LinearProgressIndicator(minHeight: 2),
           // Daftar bubble chat yang mengikuti path aktif
           Expanded(
