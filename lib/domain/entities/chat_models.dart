@@ -91,8 +91,11 @@ class ChatTree {
     required this.rootId,
     Map<String, ChatNode>? nodes,
     List<String>? branchPathIds,
+    Map<String, List<String>>? savedTailsByAssistantId,
   }) : nodes = nodes ?? <String, ChatNode>{},
-       branchPathIds = branchPathIds ?? <String>[];
+       branchPathIds = branchPathIds ?? <String>[],
+       savedTailsByAssistantId =
+           savedTailsByAssistantId ?? <String, List<String>>{};
 
   /// Id node root (pesan system).
   final String rootId;
@@ -105,6 +108,10 @@ class ChatTree {
   /// dan perpindahan antar sibling tanpa kehilangan branch lain.
   final List<String> branchPathIds;
 
+  /// Menyimpan "lanjutan path" yang pernah dipilih per node assistant,
+  /// agar ketika kembali ke branch tersebut, tail path dapat dipulihkan.
+  final Map<String, List<String>> savedTailsByAssistantId;
+
   // --- Serialization helpers ---
   Map<String, dynamic> toJson() => <String, dynamic>{
     'rootId': rootId,
@@ -112,6 +119,7 @@ class ChatTree {
       (String key, ChatNode value) => MapEntry(key, value.toJson()),
     ),
     'branchPathIds': branchPathIds,
+    'savedTailsByAssistantId': savedTailsByAssistantId,
   };
 
   static ChatTree fromJson(Map<String, dynamic> json) {
@@ -120,10 +128,23 @@ class ChatTree {
       for (final MapEntry<String, dynamic> e in rawNodes.entries)
         e.key: ChatNode.fromJson(e.value as Map<String, dynamic>),
     };
+
+    // Parse savedTailsByAssistantId dengan backward compatibility
+    Map<String, List<String>> savedTails = <String, List<String>>{};
+    if (json.containsKey('savedTailsByAssistantId')) {
+      final Map<String, dynamic> rawTails =
+          json['savedTailsByAssistantId'] as Map<String, dynamic>;
+      savedTails = rawTails.map(
+        (String key, dynamic value) =>
+            MapEntry(key, (value as List<dynamic>).cast<String>()),
+      );
+    }
+
     return ChatTree(
       rootId: json['rootId'] as String,
       nodes: parsedNodes,
       branchPathIds: (json['branchPathIds'] as List<dynamic>).cast<String>(),
+      savedTailsByAssistantId: savedTails,
     );
   }
 }

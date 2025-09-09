@@ -45,6 +45,9 @@ class LocalDriftChatRepository implements ChatRepository {
       memTree.branchPathIds
         ..clear()
         ..addAll(existing.branchPathIds);
+      memTree.savedTailsByAssistantId
+        ..clear()
+        ..addAll(existing.savedTailsByAssistantId);
       return memTree;
     }
     final ChatTree tree = await _memory.getCurrentTree();

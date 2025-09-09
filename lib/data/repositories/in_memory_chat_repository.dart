@@ -9,10 +9,6 @@ class InMemoryChatRepository implements ChatRepository {
   ChatTree? _tree;
   // Random untuk membuat variasi jawaban mock
   final Random _random = Random();
-  // Menyimpan "lanjutan path" yang pernah dipilih per node assistant,
-  // agar ketika kembali ke branch tersebut, tail path dapat dipulihkan.
-  final Map<String, List<String>> _savedTailsByAssistantId =
-      <String, List<String>>{};
 
   @override
   Future<ChatTree> getCurrentTree() async {
@@ -42,6 +38,7 @@ class InMemoryChatRepository implements ChatRepository {
       rootId: rootId,
       nodes: <String, ChatNode>{rootId: rootNode},
       branchPathIds: <String>[rootId],
+      savedTailsByAssistantId: <String, List<String>>{},
     );
     return _tree!;
   }
@@ -156,7 +153,7 @@ class InMemoryChatRepository implements ChatRepository {
       final List<String> currentTail = List<String>.from(
         tree.branchPathIds.sublist(assistantIndexInPath),
       );
-      _savedTailsByAssistantId[assistantNodeId] = currentTail;
+      tree.savedTailsByAssistantId[assistantNodeId] = currentTail;
     }
 
     if (parentIndexInPath >= 0) {
@@ -203,7 +200,7 @@ class InMemoryChatRepository implements ChatRepository {
         final List<String> currentTail = List<String>.from(
           tree.branchPathIds.sublist(parentIndexInPath + 1),
         );
-        _savedTailsByAssistantId[currentAssistantId] = currentTail;
+        tree.savedTailsByAssistantId[currentAssistantId] = currentTail;
       }
 
       // Susun path baru: sampai parent + nextId + tail tersimpan (jika ada).
@@ -211,7 +208,7 @@ class InMemoryChatRepository implements ChatRepository {
         tree.branchPathIds.sublist(0, parentIndexInPath + 1),
       )..add(nextId);
 
-      final List<String>? savedTail = _savedTailsByAssistantId[nextId];
+      final List<String>? savedTail = tree.savedTailsByAssistantId[nextId];
       if (savedTail != null && savedTail.isNotEmpty) {
         // Tail yang disimpan biasanya diawali oleh nextId sendiri, hindari duplikasi.
         final List<String> tailWithoutHead = savedTail.first == nextId
@@ -231,6 +228,5 @@ class InMemoryChatRepository implements ChatRepository {
   Future<void> clearStorage() async {
     // Reset tree ke null agar conversation baru dibuat saat getCurrentTree() dipanggil
     _tree = null;
-    _savedTailsByAssistantId.clear();
   }
 }
